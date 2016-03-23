@@ -132,6 +132,7 @@ namespace WlanScanner
             Boolean changed = true;
             
             Task.Run(() => {
+                int lanID = 1;
                 while ( buttonClicked)
                 {
                     try
@@ -140,25 +141,30 @@ namespace WlanScanner
                         string output = " ";
                         string dev = "Unknown";
                         
-                        int lanID = 1;
+                        
+                        if (counter > 0 && macs.Count < 1)
+                        {
+                            lanID++;
+                            counter = 0;
+                        }
                         for (int i = 0; i < 255; i++)
                         {
-                            if (counter > 0 && macs.Count < 1)
-                            {
-                                lanID++;
-                                counter = 0;
-                            }
+                            
                             string ip = "192.168." + lanID.ToString() + "." + i.ToString();
-                            if(counter > 0){
+                            if (counter > 0) {
                                 byte[] buffer = new byte[32];
-                                PingOptions options = new PingOptions ();
+                                PingOptions options = new PingOptions();
                                 options.DontFragment = true;
                                 PingReply reply = pingSender.Send(ip, 120, buffer, options);
-                                if (!(reply.Status == IPStatus.Success))
+                                //deviceCounterLabel.Dispatcher.BeginInvoke(new Action(() => setDeviceCounterLabel("pinging...." + ip)));
+                                if (!(reply.Status == IPStatus.Success)){
+                                    //deviceCounterLabel.Dispatcher.BeginInvoke(new Action(() => setDeviceCounterLabel(reply.Status.ToString())));
                                     continue;
+                                }
                                 
 
                             }
+                            deviceCounterLabel.Dispatcher.BeginInvoke(new Action(() => setDeviceCounterLabel("arping...." + ip)));
                             System.Diagnostics.Process process = new System.Diagnostics.Process();
                             System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
 
@@ -212,7 +218,7 @@ namespace WlanScanner
                             {
                                 
                                 String labelTxt = "Connected Devices : " + macs.Count;
-                                deviceCounterLabel.Dispatcher.BeginInvoke(new Action(() => setDeviceCounterLabel(labelTxt)));
+                                //deviceCounterLabel.Dispatcher.BeginInvoke(new Action(() => setDeviceCounterLabel(labelTxt)));
                                 macTxt = "List of Devices Connected with " + hostname + "\n";
                                 foreach (String item in macs)
                                 {
@@ -228,7 +234,7 @@ namespace WlanScanner
                             process.WaitForExit();
 
                         }
-
+                        
                         System.Threading.Thread.Sleep(30 * 1000);
 
                     }
